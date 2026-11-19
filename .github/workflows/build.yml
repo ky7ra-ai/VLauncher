@@ -19,14 +19,19 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 17
+          java-version: 21
 
       - name: Build debug APK
         run: |
           set -o pipefail
           chmod +x gradlew
-          echo "ANDROID_HOME=$ANDROID_HOME" | tee build.log
-          ./gradlew assembleDebug --stacktrace --no-daemon 2>&1 | tee -a build.log
+          {
+            echo "ANDROID_HOME=$ANDROID_HOME"
+            SDKM="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+            yes | "$SDKM" --licenses > /dev/null || true
+            "$SDKM" "platforms;android-35" "build-tools;35.0.0" "ndk;29.0.13846066"
+            ./gradlew :app:assembleDebug --stacktrace --no-daemon
+          } 2>&1 | tee build.log
 
       - uses: actions/upload-artifact@v4
         if: success()
@@ -45,7 +50,8 @@ jobs:
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
-          mkdir -p /tmp/logs && cp build.log /tmp/logs/build.log 2>/dev/null || echo "no build.log" > /tmp/logs/build.log
+          mkdir -p /tmp/logs
+          tail -n 400 build.log > /tmp/logs/build.log 2>/dev/null || echo "no build.log" > /tmp/logs/build.log
           echo "status=${{ job.status }} sha=${GITHUB_SHA} run=${GITHUB_RUN_ID}" > /tmp/logs/info.txt
           git checkout --orphan build-logs
           git rm -rf . > /dev/null 2>&1 || true

@@ -1,5 +1,6 @@
 pluginManagement {
     repositories {
+        maven { url = uri("https://www.jitpack.io") }
         google()
         mavenCentral()
         gradlePluginPortal()
@@ -9,6 +10,7 @@ pluginManagement {
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
+        maven { url = uri("https://www.jitpack.io") }
         google()
         mavenCentral()
     }
@@ -16,3 +18,6 @@ dependencyResolutionManagement {
 
 rootProject.name = "VLauncher"
 include(":app")
+include(":Bcore")
+include(":black-reflection")
+include(":compiler")
