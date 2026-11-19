@@ -23,20 +23,41 @@ jobs:
 
       - uses: android-actions/setup-android@v3
 
+      - name: Install SDK packages
+        run: sdkmanager "platforms;android-34" "build-tools;34.0.0"
+
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: "8.9"
 
       - name: Build debug APK
-        run: gradle assembleDebug --stacktrace
+        id: build
+        run: |
+          set -o pipefail
+          gradle assembleDebug --stacktrace --no-daemon 2>&1 | tee build.log
 
       - uses: actions/upload-artifact@v4
+        if: success()
         with:
           name: VLauncher-debug
           path: app/build/outputs/apk/debug/*.apk
 
       - name: Publish release (tag v*)
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: success() && startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
           files: app/build/outputs/apk/debug/*.apk
+
+      - name: Push build log to build-logs branch
+        if: failure() && github.event_name != 'pull_request'
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          mkdir -p /tmp/logs && cp build.log /tmp/logs/build.log 2>/dev/null || echo "no build.log" > /tmp/logs/build.log
+          echo "sha=${GITHUB_SHA} run=${GITHUB_RUN_ID}" > /tmp/logs/info.txt
+          git checkout --orphan build-logs
+          git rm -rf . > /dev/null 2>&1 || true
+          cp /tmp/logs/* .
+          git add build.log info.txt
+          git commit -m "build log for ${GITHUB_SHA}"
+          git push -f origin build-logs
