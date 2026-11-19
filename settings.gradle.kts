@@ -1,6 +1,5 @@
 pluginManagement {
     repositories {
-        maven { url = uri("https://www.jitpack.io") }
         google()
         mavenCentral()
         gradlePluginPortal()
@@ -10,9 +9,13 @@ pluginManagement {
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
-        maven { url = uri("https://www.jitpack.io") }
         google()
         mavenCentral()
+        // Hanya untuk FreeReflection (com.github.tiann), dipakai oleh :Bcore
+        maven {
+            url = uri("https://www.jitpack.io")
+            content { includeGroup("com.github.tiann") }
+        }
     }
 }
 

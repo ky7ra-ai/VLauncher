@@ -51,7 +51,7 @@ jobs:
           git config user.name "github-actions"
           git config user.email "actions@github.com"
           mkdir -p /tmp/logs
-          tail -n 400 build.log > /tmp/logs/build.log 2>/dev/null || echo "no build.log" > /tmp/logs/build.log
+          (head -n 120 build.log; echo "......"; tail -n 280 build.log) > /tmp/logs/build.log 2>/dev/null || echo "no build.log" > /tmp/logs/build.log
           echo "status=${{ job.status }} sha=${GITHUB_SHA} run=${GITHUB_RUN_ID}" > /tmp/logs/info.txt
           git checkout --orphan build-logs
           git rm -rf . > /dev/null 2>&1 || true
