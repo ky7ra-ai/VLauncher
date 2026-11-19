@@ -41,12 +41,12 @@ jobs:
           files: app/build/outputs/apk/debug/*.apk
 
       - name: Push build log to build-logs branch
-        if: failure() && github.event_name != 'pull_request'
+        if: always() && github.event_name != 'pull_request'
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
           mkdir -p /tmp/logs && cp build.log /tmp/logs/build.log 2>/dev/null || echo "no build.log" > /tmp/logs/build.log
-          echo "sha=${GITHUB_SHA} run=${GITHUB_RUN_ID}" > /tmp/logs/info.txt
+          echo "status=${{ job.status }} sha=${GITHUB_SHA} run=${GITHUB_RUN_ID}" > /tmp/logs/info.txt
           git checkout --orphan build-logs
           git rm -rf . > /dev/null 2>&1 || true
           cp /tmp/logs/* .
